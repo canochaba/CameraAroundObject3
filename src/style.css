@@ -10,6 +10,7 @@
 
 body {
 	margin: 0;
+	overscroll-behavior-y: contain;
 	--color-text: #d8d8d8;
 	--color-bg: #060606;
 	--color-link: #fff;
@@ -83,33 +84,6 @@ main {
 	padding: 2rem;
 }
 
-/* Grainy texture animation by Geoff Graham https://css-tricks.com/snippets/css/animated-grainy-texture/ */
-
-main::before {
-	animation: grain 8s steps(10) infinite;
-	background-image: url(../img/noise.png);
-	content: '';
-	height: 300%;
-	left: -50%;
-	opacity: 0.5;
-	position: fixed;
-	top: -100%;
-	width: 300%;
-	pointer-events: none;
-}
-
-@keyframes grain {
-  0%, 100% { transform:translate(0, 0); }
-  10% { transform:translate(-5%, -10%); }
-  20% { transform:translate(-15%, 5%); }
-  30% { transform:translate(7%, -25%); }
-  40% { transform:translate(-5%, 25%); }
-  50% { transform:translate(-15%, 10%); }
-  60% { transform:translate(15%, 0%); }
-  70% { transform:translate(0%, 15%); }
-  80% { transform:translate(3%, 35%); }
-  90% { transform:translate(-10%, 10%); }
-}
 
 .logo {
 	grid-area: logo;

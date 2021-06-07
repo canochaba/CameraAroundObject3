@@ -10,95 +10,12 @@ import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader.js'
  * PRE CSS
  */
  import gsap from 'gsap';
+import { MixOperation } from 'three'
  const content = document.querySelector('.content span');
  const contentTitle = document.querySelector('.title');
  const contentSubtitle = document.querySelector('.subtitle');
- class App {
-   constructor() {
-      
-     // Main animation tl
-     this.tl = gsap.timeline({
-       delay: 0.25,
-     });
- 
-     this.tl
-       .add(this.article())
-   }
- 
-   article() {
-     // Main content
-     const tl = gsap.timeline({
-       defaults: {
-         ease: 'power3.inOut',
-       }
-     });
- 
-     // Content clip
-     const content = document.querySelector('.content span');
-     const contentClip = { x: 0 };    
-        
-      tl
-        .from('.title div, .subtitle div', {
-          duration: 1,
-          xPercent: -100,
+ let scene, camera, model, pathCurve, boundingBoxFinal, stats, composer, speed = 0, position = 0, rounded = 0, preRounded = 0, moveTitle, moveSubtitle;
 
-          // stagger: 0.1,
-        })
-        // .from('.menu__inner-translate', {
-        //   duration: 1.5,
-        //   yPercent: -100,
-        // }, '-=1.5')
-        .from('.play', {
-          duration: 1,
-          scale: 0,
-          rotate: '-62deg',
-        }, '-=1.5');
-        
-        console.log(tl);
-        console.log( document.getElementById("myTitle"));
-      return tl;    
-     }
-    
- }
- class AppContent {
-  constructor() {
-     
-    // Main animation tl
-    this.tl = gsap.timeline({
-      delay: 0.25,
-    });
-
-    this.tl
-      .add(this.article())
-  }
-
-  article() {
-    // Main content
-    const tl = gsap.timeline({
-      defaults: {
-        ease: 'power3.inOut',
-      }
-    });
-
-    // Content clip
-    const content = document.querySelector('.content span');
-    const contentClip = { x: 0 };    
-
-    tl
-      .to(contentClip, {
-        duration: 1.5,
-        x: 100,
-        onUpdate: () => {
-          content.style.setProperty('--clip', `${contentClip.x}%`);
-          
-        },
-      }, '-=1.25')
-    
-    return tl;    
-  }
-
- 
-}
  function ChangeText(step){
   switch(step){
     case 0:
@@ -128,19 +45,66 @@ import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader.js'
       document.getElementById("contentText").style.clip = "0%";
       
       document.getElementById("play").style.visibility = "hidden";
-      new AppContent();
+      // new AppContent();
+      AnimateSubtitle();
       document.getElementById("contentText").style.visibility = "visible";
       document.getElementById("myTitle").innerHTML = "ArcadeScope";
       
       //document.getElementById("tittle").style["font-size"] = "11.25vw;";
-      break;
-       
+      break;   
    }
-
  }
+
+ moveTitle = new TimelineMax();
+ moveSubtitle = new TimelineMax();
+
+ function AnimateTitle(){
+    var title = document.getElementById("myTitle");
+    var play = document.getElementById("play");
+    console.log(title);
+    moveTitle = new TimelineMax();
+
+    moveTitle.add(
+      TweenLite.from(
+        title,
+        1.5,
+        {
+          duration: 1,
+          xPercent: -100,
+        }), 
+        'zero'
+        );
+   
+    moveTitle.add(
+      TweenLite.from(
+        play,
+        1.5,
+        {
+          duration: 1,
+          scale: 0,
+          rotation: '-62deg',
+        }),'-=1.5'
+      );
+       
+ }
+ function AnimateSubtitle(){
+  
+  var subtitle = document.getElementById("subtitle");
+  moveSubtitle = new TimelineMax();
+  moveSubtitle.add(
+    TweenLite.from(
+      subtitle,
+      1.5,
+      {
+        duration: 1,
+        xPercent: -100,
+      }), 
+      'zero'
+      );
+    }
  //new App();
 /**POST CSS*/
-let scene, camera, model, pathCurve, boundingBoxFinal, stats, composer, speed = 0, position = 0, rounded = 0, preRounded = 0;
+
 // Canvas
 const canvas = document.querySelector('canvas.webgl')
 // CREATE FOCAL POINT
@@ -360,8 +324,13 @@ function animate() {
           
      if(preRounded != rounded){
          preRounded = rounded;
+         moveSubtitle.seek(2);
          ChangeText(rounded);
-         new App();
+         moveTitle.seek(2);
+         
+         AnimateTitle();
+         
+        //  new App();
      }
      let diff = (rounded - position);
      position += Math.sign(diff)*Math.pow(Math.abs(diff),0.7)*0.015;
@@ -369,7 +338,30 @@ function animate() {
      requestAnimationFrame(animate)
 }
 
-window.addEventListener('wheel',(e) => {
-    speed += e.deltaY * 0.0003;
-    
-})
+function adjustMixers(deltaY) {
+  speed += deltaY * 0.0003;
+}
+
+function onMouseWheel(e) {
+  adjustMixers(e.deltaY);
+}
+
+let lastY;
+function onTouchStart(e) {   
+  lastY = e.touches[0].pageY;
+}
+
+function onTouchMove(event) {
+  
+  // e.preventDefault();
+  const currentY = event.touches[0].pageY;
+  const deltaY = currentY - lastY;
+  lastY = currentY;
+  adjustMixers(deltaY * 2);
+}
+
+var el = document.getElementsByTagName("canvas")[0];
+
+el.addEventListener('wheel', onMouseWheel, {passive: false});
+el.addEventListener('touchstart', onTouchStart, {passive: false});
+el.addEventListener('touchmove', onTouchMove, {passive: false});
